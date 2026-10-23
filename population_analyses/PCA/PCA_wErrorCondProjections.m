@@ -308,9 +308,9 @@ for boots = 1:bootsStrapNum
 end
 
 %% Compare the last X ms of activity across all three conditions
-% Extract the final X ms of each bootstrapped projection.
-% Each bootstrap iteration contributes one mean value per condition.
-% Compare all three conditions using pairwise rank-sum tests.
+% Extract the final X ms of each bootstrapped projection
+% Each bootstrap iteration contributes one mean value per condition
+% Compare all three conditions using pairwise rank-sum tests
 data1 = cell2mat(projectionError1(pcToPlot,:));
 data1 = data1';
 data2 = cell2mat(projectionError2(pcToPlot,:));
@@ -321,8 +321,8 @@ data3 = data3';
 % Determine the time bins corresponding to the final X ms.
 lastXms = xVector >= (xVector(end) - windowToCompare) & xVector <= xVector(end);
 
-% Calculate the mean projection over the final 25 ms for each bootstrap.
-% Rows = bootstrap iterations; columns = conditions.
+% Calculate the mean projection over the final X ms for each bootstrap.
+% Rows = bootstrap iterations; columns = conditions
 lastXms = [
     mean(data1(:, lastXms), 2, 'omitnan'), ...
     mean(data2(:, lastXms), 2, 'omitnan'), ...
@@ -375,25 +375,21 @@ for k = 1:nComparisons
 end
 
 %% Plot bootstrapped projection trajectories
-% Plot the mean projection and 95% confidence intervals for all three
-% conditions in a standalone figure.
+% Plot the mean projection and 95% confidence intervals
 
 figure('Color', 'w', 'Position', [300 300 1200 350]);
 hold on
 
-% Plot the bootstrap mean trajectories with 95% confidence intervals.
 plotSEM(data1, colors{1}, 1, xVector, 'c95', 1);
 plotSEM(data2, colors{2}, 1, xVector, 'c95', 1);
 plotSEM(data3, colors{3}, 1, xVector, 'c95', 1);
 
-% Format the axes.
 xline(0, '--');
 xlim([xVector(1) xVector(end)]);
 ylabel(sprintf('PC #%d', pcToPlot));
 xlabel('Time (ms)');
 set(gca, 'TickDir', 'out');
 
-% Add a legend for the three error conditions.
 legend({'Condition 1', 'Condition 2', 'Condition 3'}, ...
     'Location', 'best');
 

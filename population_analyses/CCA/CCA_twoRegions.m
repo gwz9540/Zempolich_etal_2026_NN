@@ -164,7 +164,7 @@ ylabel('Condition');
 title('Delay between AC and M2 PCA projections (ms)');
 set(gca, 'XTick', 1:numComponentsToCheck);
 
-%% CANONICAL CORRELATION ANALYSIS
+%% Main CCA
 %
 % This full-data CCA is used for descriptive visualization.
 % Prediction below fits a separate PCA/CCA model
@@ -180,7 +180,7 @@ shared_B = V(:,1:d);
 fprintf('\nCanonical correlations:\n');
 disp(r(1:min(d, numel(r)))');
 
-%% PREDICT REGION B FROM REGION A
+%% Predict region A from B
 % Leave-one-outout cross-validation.
 % PCA and CCA are refitted within each fold to avoid data leakage.
 %
@@ -214,7 +214,7 @@ for c = 1:C
     train_idx = train_idx(:);
     test_idx = test_idx(:);
     
-    % Extract samples: observations x neurons.
+    % Extract samples (observations x neurons)
     A_train_raw = X_A(:,train_idx)';
     B_train_raw = X_B(:,train_idx)';
     A_test_raw  = X_A(:,test_idx)';
@@ -249,26 +249,26 @@ for c = 1:C
         continue;
     end
 
-    % Explicit dimension checks prevent matrix multiplication errors.
+    % Explicit dimension checks prevent matrix multiplication errors
     assert(size(scoreA_train,2) == size(A_cv,1), ...
         'Region A PCA scores do not match CCA coefficient rows.');
     assert(size(scoreB_train,2) == size(B_cv,1), ...
         'Region B PCA scores do not match CCA coefficient rows.');
 
-    % Canonical projections.
+    % Canonical projections
     U_train = scoreA_train * A_cv(:,1:d_cv);
     V_train = scoreB_train * B_cv(:,1:d_cv);
 
     U_test = scoreA_test * A_cv(:,1:d_cv);
     V_test = scoreB_test * B_cv(:,1:d_cv);
 
-    % Fit linear mapping from Region A to Region B using training data.
+    % Fit linear mapping from Region A to Region B using training data
     beta = [ones(size(U_train,1),1), U_train] \ V_train;
 
     % Predict held-out Region B canonical projections.
     V_pred = [ones(size(U_test,1),1), U_test] * beta;
 
-    % Compute held-out R-squared per canonical dimension.
+    % Compute held-out R-squared per canonical dimension
     ss_res = sum((V_test-V_pred).^2,1);
     ss_tot = sum((V_test-mean(V_test,1)).^2,1);
 
@@ -279,7 +279,7 @@ for c = 1:C
         pred_r2(c) = mean(r2_dims);
     end
 
-    % Correlation between predicted and actual held-out projections.
+    % Correlation between predicted and actual held-out projections
     pred_flat = V_pred(:);
     true_flat = V_test(:);
 
@@ -420,7 +420,7 @@ ylabel(sprintf('CCA dimension %d', dimToPlot));
 xlim([xVector(1), xVector(end)]);
 box off;
 
-%% PCA AXIS ALIGNMENT WITH INDIVIDUAL CCA DIMENSIONS
+%% Original PCA axis alignment with single CCA dims
 %
 % Measures how much each PCA basis vector contributes to each
 % canonical axis. The calculation uses the CCA coefficient matrices
@@ -434,11 +434,11 @@ figure('Color', 'w', 'Position', [200 200 1000 500]);
 
 for ccaDim = 1:numCCA
 
-    % AC: contribution of each PCA-score coordinate to this CCA axis.
+    % AC contribution of each PCA-score coordinate to this CCA axis
     vA = A_cca(:,ccaDim);
     vB = B_cca(:,ccaDim);
 
-    % Normalize so squared components sum to 1.
+    % Normalize so squared components sum to 1
     vA = vA / max(norm(vA), eps);
     vB = vB / max(norm(vB), eps);
 
@@ -461,7 +461,7 @@ for ccaDim = 1:numCCA
 
     % Angular difference between each PCA coordinate vector and
     % the corresponding canonical axis.
-    % The angle is calculated in the same coordinate space.
+    % The angle is calculated in the same coordinate space
     anglesA = nan(numPCsAC,1);
     anglesB = nan(numPCsM2,1);
 
@@ -493,11 +493,7 @@ for ccaDim = 1:numCCA
 
 end
 
-%% SIMILARITY BETWEEN ORIGINAL PCA TIME SERIES
-%
-% PCA axes from separate regions do not have a one-to-one identity.
-% This is a descriptive comparison of the corresponding time series,
-% not a definitive test of neural-space alignment.
+%% exploring similarity between original PCA time series
 
 nCommonPCs = min([numPCsToTest, size(score_A,2), size(score_B,2)]);
 
@@ -517,7 +513,7 @@ for pc = 1:nCommonPCs
         continue;
     end
 
-    % Sign-align based on correlation.
+    % Sign align based on correlation
     if corr(a,b) < 0
         b = -b;
     end

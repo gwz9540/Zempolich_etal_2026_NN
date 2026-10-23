@@ -1,5 +1,5 @@
 function [alignmentScore, transform, residualsPerPC, slidingResidualsPerPC] = run_procrustes_alignment_twoManifolds(data1, data2, numPCs, dimsForProcrustes, name1, name2, plotIn3D, alignedColors, doShuffle)
-% PROCRUSTES_NEURAL_MANIFOLDS
+% Procrustes analysis on neural psths
 % Performs PCA on two neural datasets, aligns via Procrustes, and evaluates axis-specific distortion.
 %
 % INPUTS:
@@ -99,7 +99,7 @@ end
 
 % Use only the selected indices to compute residuals per PC
 residualsPerPC = sqrt(mean((Y_aligned_full(residual_idxs,:) - X_t(residual_idxs,:)).^2, 1));
-% % --- Sliding window residuals per PC ---
+%% Sliding window residuals per PC
 
 windowSize = 50;
 numTimepoints = 1501;
@@ -139,7 +139,7 @@ for cond = 1:numConds
 end
 fprintf('%.4f ± %.4f\n', mean(corrs), std(corrs));
 
-% ---- Report residuals ----
+% Report residuals
 %fprintf('\nResidual Procrustes error per PC (1 to %d):\n', numPCs);
 %disp(residualsPerPC');
 
@@ -215,9 +215,7 @@ grid on;
 hold off;
 
 
-% PLOT ALIGNED NEURAL TRAJECTORIES
-% BLACK BACKGROUND / WHITE AXES AND LABELS
-% ORIGINAL TRAJECTORY COLORS
+% plot on black background with white axis labels
 
 trialStart = 501;
 trajEnd    = 1501;
@@ -261,7 +259,7 @@ ax.GridColor = [0.7 0.7 0.7];
 ax.GridAlpha = 0.20;
 
 
-% PLOT TRAJECTORIES
+% plot trajs
 
 for cond = 1:numConds
 
@@ -275,7 +273,7 @@ for cond = 1:numConds
 
     if dimsForProcrustes >= 3
 
-        % TRAJECTORY 1
+        % traj 1
 
         plot3(ax, ...
             traj1(:,1), ...
@@ -314,7 +312,7 @@ for cond = 1:numConds
             'filled');
 
 
-        % TRAJECTORY 2
+        % traj 2
 
         plot3(ax, ...
             traj2(:,1), ...
@@ -324,7 +322,6 @@ for cond = 1:numConds
             'Color',color2(cond,:), ...
             'LineWidth',lineW);
 
-        % Trial-start star
         scatter3(ax, ...
             traj2(trialStart,1), ...
             traj2(trialStart,2), ...
@@ -334,7 +331,6 @@ for cond = 1:numConds
             'Marker','*', ...
             'LineWidth',1.5);
 
-        % End marker
         scatter3(ax, ...
             traj2(trajEnd,1), ...
             traj2(trajEnd,2), ...
@@ -343,7 +339,6 @@ for cond = 1:numConds
             color2(cond,:), ...
             'filled');
 
-        % Start marker
         scatter3(ax, ...
             traj2(trajStart,1), ...
             traj2(trajStart,2), ...
@@ -354,7 +349,7 @@ for cond = 1:numConds
 
     else
 
-        % TRAJECTORY 1
+        % traj 1
 
         plot(ax, ...
             traj1(:,1), ...
@@ -385,7 +380,7 @@ for cond = 1:numConds
             'filled');
 
 
-        % TRAJECTORY 2
+        % traj 2
 
         plot(ax, ...
             traj2(:,1), ...
@@ -440,12 +435,12 @@ drawnow;
 
 hold(ax,'off');
 
-% === Parameters ===
+% parameters
 time_points1 = size(latent1{1}, 2);
 time_points2 = size(latent2{1}, 2);
 dims = dimsForProcrustes;
 
-% === Prepare first manifold ===
+% prepare first manifold
 Z1_reshaped = zeros(numConds, time_points1, dims);
 for cond = 1:numConds
     idx = (cond-1)*time_points1 + (1:time_points1);
@@ -470,7 +465,7 @@ Z1_1 = F1_1(cond_fine_grid1, time_fine_grid1);
 Z2_1 = F2_1(cond_fine_grid1, time_fine_grid1);
 Z3_1 = F3_1(cond_fine_grid1, time_fine_grid1);
 
-% === Prepare second manifold ===
+% prepare second manifold
 Z2_reshaped = zeros(numConds, time_points2, dims);
 for cond = 1:numConds
     idx = (cond-1)*time_points2 + (1:time_points2);
@@ -494,7 +489,7 @@ Z1_2 = F1_2(cond_fine_grid2, time_fine_grid2);
 Z2_2 = F2_2(cond_fine_grid2, time_fine_grid2);
 Z3_2 = F3_2(cond_fine_grid2, time_fine_grid2);
 
-% === Plot both manifolds on same axes ===
+% plot both manifolds on same axes
 
 figure; hold on;
 x0=600;
@@ -508,7 +503,7 @@ set(gcf,'color','w');
 h1 = surf(Z1_1, Z2_1, Z3_1, cond_fine_grid1, ...
           'EdgeColor', 'none', 'FaceAlpha', 0.2);
 
-%colormap(gca, flipud(color1));  % Your green colormap
+%colormap(gca, flipud(color1));  % green colormap
 caxis([1 numConds]);
 % camlight left;
 % camlight right;
@@ -520,14 +515,13 @@ material shiny;
 h2 = surf(Z1_2, Z2_2, Z3_2, cond_fine_grid2, ...
           'EdgeColor', 'none', 'FaceAlpha', 0.2);
 
-%colormap(gca, flipud(color2));  % Your purple colormap
+%colormap(gca, flipud(color2));  % purple colormap
 % camlight left;
 % camlight right;
 % camlight infinite;
 lighting gouraud;
 material shiny;
 
-%To avoid colormap conflict, replace color data with solid colors:
 set(h1, 'FaceColor', alignedColors{1}, 'CData', []);
 set(h2, 'FaceColor', alignedColors{2}, 'CData', []);
 
@@ -542,7 +536,7 @@ set(gca, 'ZTickLabel', []);
 set(gca, 'LineWidth', 1);
 set(gca, 'FontSize', 10);
 
-% GREEN RING (Manifold 1): top and bottom edges (along time axis)
+% Green (Manifold 1) top and bottom edges (along time axis)
 lWidth = 3;
 greenColor = alignedColors{1};
 % Top ring (first time point)
@@ -550,7 +544,7 @@ plot3(Z1_1(:,1), Z2_1(:,1), Z3_1(:,1), '-', 'Color', greenColor, 'LineWidth', lW
 % Bottom ring (last time point)
 plot3(Z1_1(:,end), Z2_1(:,end), Z3_1(:,end), '-', 'Color', greenColor, 'LineWidth', lWidth);
 
-% PURPLE RING (Manifold 2)
+% Purple (Manifold 2)
 purpleColor = alignedColors{2};
 % Top ring
 plot3(Z1_2(:,1), Z2_2(:,1), Z3_2(:,1), '-', 'Color', purpleColor, 'LineWidth', lWidth);
@@ -560,7 +554,7 @@ plot3(Z1_2(:,end), Z2_2(:,end), Z3_2(:,end), '-', 'Color', purpleColor, 'LineWid
 
 hold off;
 
-% PLOT ALIGNED 3D MANIFOLDS - BLACK BACKGROUND
+% plot aligned 3D manifolds on black
 
 figure;
 
@@ -592,11 +586,6 @@ h2 = surf(ax, ...
     'EdgeColor','none', ...
     'FaceColor',purpleColor, ...
     'FaceAlpha',0.5);
-
-
-% ============================================================
-% AXES
-% ============================================================
 
 ax.Color = 'k';
 

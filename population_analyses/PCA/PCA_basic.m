@@ -52,12 +52,12 @@ figureHeight = 500;
 
 % Each condition must contain a matrix organized as neurons x time bins.
 % Conditions are concatenated along the time dimension, with each
-% condition occupying one consecutive block of time samples.
+% condition occupying one consecutive block of time samples
 
 switch plotType
 
     case 3
-        % Load all specified conditions for amplitude-binning analysis.
+        % Load all specified conditions for amplitude-binning analysis
         PSTHsToUseOG = cell(1, nTotalCategories);
 
         for c = 1:nTotalCategories
@@ -66,7 +66,7 @@ switch plotType
         end
 
     case 2
-        % Load the three conditions used in the 3 zones analysis.
+        % Load the three conditions used in the 3 zones analysis
         PSTHsToUseOG = { ...
             newPSTHsToPlot.Cond1, ...
             newPSTHsToPlot.Cond2, ...
@@ -79,7 +79,7 @@ end
 
 nCats = numel(PSTHsToUseOG);
 
-% Confirm that all conditions have compatible dimensions.
+% Confirm that all conditions have compatible dimensions
 nNeurons = size(PSTHsToUseOG{1}, 1);
 nTimeBins = size(PSTHsToUseOG{1}, 2);
 
@@ -100,18 +100,18 @@ PSTHsToUse = cell2mat(PSTHsToUseOG);
 %% define condition colors
 
 % Use the green/purple manuscript gradient for amplitude-binning analyses and distinct
-% condition colors for zones analyses.
+% condition colors for zones analyses
 switch plotType
 
     case 1
-        % Gradually vary green intensity across conditions.
+        % Gradually vary green intensity across conditions
         conditionColors = [ ...
             linspace(0.8, 0, nCats)', ...
             linspace(1.0, 0.4, nCats)', ...
             linspace(0.8, 0, nCats)'];
 
     case 2
-        % Gradually vary purple intensity across conditions.
+        % Gradually vary purple intensity across conditions
         conditionColors = [linspace(1, 0.3, nCats)', ...   % Red channel from 1 to 0.3
             linspace(0.9, 0, nCats)', ...   % Green channel from 0.9 to 0
             linspace(1, 0.5, nCats)'];       % Blue channel from 1 to 0.5
@@ -126,24 +126,24 @@ conditionLabels = arrayfun(@(c) sprintf('Condition %d', c), ...
 %% standardize neural activity and perform PCA
 
 % Standardize each neuron's activity across all conditions and time bins.
-% This gives each neuron comparable scale in the PCA.
+% This gives each neuron comparable scale in the PCA
 
 dataToPCA = zscore(PSTHsToUse, 0, 2);
 
 % Replace undefined standardized values for constant neurons with zero.
-% Such neurons contain no temporal or condition-dependent variance.
+% Such neurons contain no temporal or condition-dependent variance
 dataToPCA(isnan(dataToPCA)) = 0;
 
 % PCA expects observations x features.
-% Here, observations are condition-time samples and features are neurons.
+% Here, observations are condition-time samples and features are neurons
 [coeff, score, ~, ~, explained] = pca(dataToPCA');
 
-% Each row of score corresponds to one condition-time sample.
-% Each column corresponds to one principal component.
+% Each row of score corresponds to one condition-time sample
+% Each column corresponds to one principal component
 nAvailablePCs = size(score, 2);
 nPCsToPlot = min(nPCsToPlot, nAvailablePCs);
 
-% Define the row indices corresponding to each condition.
+% Define the row indices corresponding to each condition
 windowPlot = cell(1, nCats);
 
 for c = 1:nCats
